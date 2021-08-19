@@ -22,10 +22,10 @@ print(frame_count)
 duration = frame_count / fps
 print(duration)
 
-
 # bgsubknn = cv2.createBackgroundSubtractorKNN(40) # มักจะดีกว่า , default จะเก็บ buffer 400 - 500 grame
 # L1 = np.r_[50:53]
 # L2 = np.r_[60:63]
+
 
 L1_status, L2_status = False, False
 count = 0
@@ -65,6 +65,8 @@ while True:
 
     c += 1
     timer += 1
+    
+    
     crop_frame1 = frame[y1:y2, x1:x2]
     crop_frame2 = frame[yy1:yy2, xx1:xx2]
 
