@@ -1,4 +1,4 @@
-﻿method,state,coordinate,upper,lower
+﻿method,state,coordinate,lower,upper
 image subtraction,1,"[50, 140, 200, 200]",,
-image subtraction,99,"[430, 170, 500, 250]",,
-color space,-1,,,
+image subtraction,2,"[430, 170, 500, 250]",,
+color space,99,"[390,197,475,305]","[24,64,106]","[93, 255,255]"

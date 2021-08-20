@@ -44,6 +44,8 @@ def setup_param(method):
     fg = []
     L_status = []
     crop_frame = []
+    relay = []
+    relay_status = []
     
     
     dict_method = dict(Counter(method)) # {'image subtraction' : 2 , 'color space' : 1}
@@ -57,16 +59,24 @@ def setup_param(method):
         bgsubknn.append(cv2.createBackgroundSubtractorKNN(40))
         crop_frame.append([])
         fg.append([])
+        relay.append([])
+        relay_status.append(False)
         L_status.append(False)
         
     # color space=========================================
     for i in range(no_color_space):
         crop_frame.append([])
+        fg.append([])
+        relay.append([])
+        relay_status.append(False)
         L_status.append(False)
-        
-        
     
-    return bgsubknn, L_status, no_method, crop_frame, fg, no_image_subtraction, no_color_space
+    relay.append([])
+    
+    return bgsubknn, relay, relay_status, L_status, no_method, crop_frame, fg, no_image_subtraction, no_color_space
+    
+    
+    
     
 
 def main(video_path ,csv_path):
@@ -79,87 +89,134 @@ def main(video_path ,csv_path):
     fps, frame_count, duration = detail_video(cap)
     
     # setup param
-    (bgsubknn, L_status, no_method, 
+    (bgsubknn, relay, relay_status, L_status, no_method, 
      crop_frame, fg, no_image_subtraction, no_color_space) = setup_param(method)
-     
+    
+    for i in range(len(relay)):
+        relay[i] = 0
+    relay[-1] = 30 # relay will have more than point of interest +1
+    time = 0 
+#     print(sum(L_status), len(L_status))
+    count = 0
     
     # read video
     while True:
         ret, img = cap.read()
         if not ret:
             break
+        time += 1
+        
         frame = cv2.GaussianBlur(img ,(5,5),0)   
         cv2.imshow('frame', img)
         
         
 # ============== loop follow param =============================================
-        # image subtraction
-        no_count_function = -1 # use for L_status/ count loop current method
-        for i in range(no_image_subtraction):
-            no_count_function += 1
-            if state[no_count_function] != -1:
-                coor = literal_eval(coordinate[no_count_function])
+        no_count_color_space = 0
+        no_count_img_subtraction = 0
+        for z in range(no_method):
+            if state[z] != -1:
+                crop_frame[z] = crop(frame, coordinate[z])
                 
-                x1 = coor[0] 
-                y1 = coor[1] 
-                x2 = coor[2] 
-                y2 = coor[3] 
-                
-                crop_frame[no_count_function] = frame[y1:y2, x1:x2]
-                
-                if method[i] == 'image subtraction':
-                    fg[i] = img_subtrack(crop_frame[no_count_function], bgsubknn[i])
-        
-        # color space
-        for i in range(no_color_space):
-            no_count_function += 1
-            if state[no_count_function] != -1:
-                coor = literal_eval(coordinate[no_count_function])
+        # ================== pre process follow method ==================
+                if method[z] == 'image subtraction':
+                    fg[z] = img_subtrack(crop_frame[z], bgsubknn[no_count_img_subtraction])
+                    no_count_img_subtraction += 1 
+                    
+                    
+                elif method[z] == 'color space':
+                    fg[z] = color_space(crop_frame[z], upper[z], lower[z])
+                    no_count_color_space += 1
+                    
+        # ========================= check status ==========================
+                # threshold + relay management
+#                 print(state[z])
+#                 print(time)
+                if state[z] == 1:
+#                     print('a')
+#                     print("z: {2} locate1: {0}, locate2: {1}".format((np.sum(fg[0])), (np.sum(fg[1])), z))
+#                     print(relay[z])
+                    
+                    if np.sum(fg[z]) > 100000 and relay[z] > relay[-1]: # relay[-1] = threshold when start video
+                        L_status[z] = True
+                        relay_status[z] = True
+                        relay[z] = 0
+                        print('a')
+                        
+                elif state[z] > 1:
+                    if np.sum(fg[z]) > 100000 and relay[z] > relay[-1] and relay_status[z-1] == True:
+                        L_status[z] = True
+                        relay_status[z] = True
+                        relay[z] = 0
+                        print('b')
+                        
+#         print(sum(L_status), len(L_status), time, np.sum(fg[0]),np.sum(fg[1]))      
+        print(count, relay[0], relay_status[0],L_status[0], relay[1],relay_status[1], L_status[1],relay[2],relay_status[2],L_status[2],time, np.sum(fg[0]),np.sum(fg[1]))      
 
-                x1 = coor[0] 
-                y1 = coor[1] 
-                x2 = coor[2] 
-                y2 = coor[3] 
+        # recheck line 3
+        if sum(L_status) == len(L_status):
+            for k in range(len(relay_status)):
+                L_status[k]= False
+            if sum(relay_status) == len(relay_status):
+                for k in range(len(relay_status)):
+                    relay_status[k]= False
+                count += 1
+#                 print('process:', count)
 
-                crop_frame[no_count_function] = frame[y1:y2, x1:x2]
+        for k in range(len(relay_status)):
+            if relay_status[k] == False:
+                relay[k] += 1
+
+
+#             if relay[k] >= relay[-1]:
+#                 relay_status[k] = True
+#                 relay[k] = 0
                 
-                # edit tommorow / mock value color space
-                if method[i] == 'color space':
-                    fg[i] = color_space(crop_frame[no_count_function])
-        
+
                 
-        # add L status
-        
-        
-        # L status
+                
+                
+                
         
         
         cv2.imshow('frame2', crop_frame[0])
         cv2.imshow('frame3', crop_frame[1])
+#         cv2.imshow('frame4', crop_frame[2])
         cv2.imshow('frame7', fg[0])
         cv2.imshow('frame8', fg[1])
+#         cv2.imshow('frame9', fg[2])
         
-        key = cv2.waitKey(1)
+        key = cv2.waitKey(100)
         if key ==27:
             break
-        
+    print('total process:',count)
     
     
     
 
     
+def crop(frame, coordinate):
+    coor = literal_eval(coordinate)
+    x1 = coor[0] 
+    y1 = coor[1] 
+    x2 = coor[2]
+    y2 = coor[3]
     
+    crop_frame = frame[y1:y2, x1:x2]
+    return crop_frame
     
     
 def img_subtrack(frame, bgsubknn):
-    return bgsubknn.apply(frame)
-#     return x
+    fg = bgsubknn.apply(frame)
+    return fg
 
 
+def color_space(frame, upper, lower):
+    HLS = cv2.cvtColor(frame, cv2.COLOR_BGR2HLS)
+    lower_color = np.array(literal_eval(lower))
+    upper_color = np.array(literal_eval(upper))
+    fg = cv2.inRange(HLS ,lower_color, upper_color)
 
-def color_space(frame):
-    print('error')
-    return 10
+    return fg
     
 
 main(video_path, csv_path)
