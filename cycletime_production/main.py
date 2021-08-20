@@ -96,7 +96,6 @@ def main(video_path ,csv_path):
         relay[i] = 0
     relay[-1] = 30 # relay will have more than point of interest +1
     time = 0 
-#     print(sum(L_status), len(L_status))
     count = 0
     
     # read video
@@ -129,13 +128,7 @@ def main(video_path ,csv_path):
                     
         # ========================= check status ==========================
                 # threshold + relay management
-#                 print(state[z])
-#                 print(time)
                 if state[z] == 1:
-#                     print('a')
-#                     print("z: {2} locate1: {0}, locate2: {1}".format((np.sum(fg[0])), (np.sum(fg[1])), z))
-#                     print(relay[z])
-                    
                     if np.sum(fg[z]) > 100000 and relay[z] > relay[-1]: # relay[-1] = threshold when start video
                         L_status[z] = True
                         relay_status[z] = True
@@ -148,9 +141,12 @@ def main(video_path ,csv_path):
                         relay_status[z] = True
                         relay[z] = 0
                         print('b')
-                        
-#         print(sum(L_status), len(L_status), time, np.sum(fg[0]),np.sum(fg[1]))      
-        print(count, relay[0], relay_status[0],L_status[0], relay[1],relay_status[1], L_status[1],relay[2],relay_status[2],L_status[2],time, np.sum(fg[0]),np.sum(fg[1]))      
+                    # end if --> np.sum
+                # end if --> check state z > 1 or z == 1
+            # end if -- check state z != -1
+        # next z
+   
+        print(sum(L_status), count, relay[0], relay_status[0],L_status[0], relay[1],relay_status[1], L_status[1],relay[2],relay_status[2],L_status[2],time, np.sum(fg[0]),np.sum(fg[1]),np.sum(fg[2]))      
 
         # recheck line 3
         if sum(L_status) == len(L_status):
@@ -160,23 +156,11 @@ def main(video_path ,csv_path):
                 for k in range(len(relay_status)):
                     relay_status[k]= False
                 count += 1
-#                 print('process:', count)
-
         for k in range(len(relay_status)):
             if relay_status[k] == False:
                 relay[k] += 1
 
 
-#             if relay[k] >= relay[-1]:
-#                 relay_status[k] = True
-#                 relay[k] = 0
-                
-
-                
-                
-                
-                
-        
         
         cv2.imshow('frame2', crop_frame[0])
         cv2.imshow('frame3', crop_frame[1])
