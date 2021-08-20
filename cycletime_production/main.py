@@ -5,7 +5,7 @@ from collections import Counter
 from ast import literal_eval
 
 
-video_path = 'D:/Git project/cycle_time_monitoring/Clycle-time-monitoring-True-Project/double-process.avi'
+video_path = 'D:/Git project/cycle_time_monitoring/Clycle-time-monitoring-True-Project/Normal.avi'
 csv_path = 'weight.csv'
 
 def read_weight(csv_path):
@@ -95,8 +95,12 @@ def main(video_path ,csv_path):
     for i in range(len(relay)):
         relay[i] = 0
     relay[-1] = 30 # relay will have more than point of interest +1
-    time = 0 
-    count = 0
+    
+    time = 0 # number of frame
+    timer = 0 
+    count = 0 # no. of work that success
+    process_time = 0 # time of 1 round process
+    cycle_time = []
     
     # read video
     while True:
@@ -104,6 +108,7 @@ def main(video_path ,csv_path):
         if not ret:
             break
         time += 1
+        timer += 1
         
         frame = cv2.GaussianBlur(img ,(5,5),0)   
         cv2.imshow('frame', img)
@@ -129,7 +134,7 @@ def main(video_path ,csv_path):
         # ========================= check status ==========================
                 # threshold + relay management
                 if state[z] == 1:
-                    if np.sum(fg[z]) > 100000 and relay[z] > relay[-1]: # relay[-1] = threshold when start video
+                    if np.sum(fg[z]) > 100000 and relay[z] > relay[-1] and time > 100: # relay[-1] = threshold when start video
                         L_status[z] = True
                         relay_status[z] = True
                         relay[z] = 0
@@ -146,16 +151,23 @@ def main(video_path ,csv_path):
             # end if -- check state z != -1
         # next z
    
-        print(sum(L_status), count, relay[0], relay_status[0],L_status[0], relay[1],relay_status[1], L_status[1],relay[2],relay_status[2],L_status[2],time, np.sum(fg[0]),np.sum(fg[1]),np.sum(fg[2]))      
-
-        # recheck line 3
+        # print(sum(L_status), count, relay[0], relay_status[0],L_status[0], relay[1],relay_status[1], L_status[1],relay[2],relay_status[2],L_status[2],time, np.sum(fg[0]),np.sum(fg[1]),np.sum(fg[2]))      
+        # calculate L_status, relay_status
         if sum(L_status) == len(L_status):
             for k in range(len(relay_status)):
                 L_status[k]= False
             if sum(relay_status) == len(relay_status):
                 for k in range(len(relay_status)):
                     relay_status[k]= False
+                #calculate round of work
+                
+                process_time = timer/fps
                 count += 1
+                cycle_time.append(process_time)
+                print(cycle_time)
+                # reset timer
+                timer = 0
+                
         for k in range(len(relay_status)):
             if relay_status[k] == False:
                 relay[k] += 1
@@ -169,7 +181,7 @@ def main(video_path ,csv_path):
         cv2.imshow('frame8', fg[1])
 #         cv2.imshow('frame9', fg[2])
         
-        key = cv2.waitKey(100)
+        key = cv2.waitKey(1)
         if key ==27:
             break
     print('total process:',count)
