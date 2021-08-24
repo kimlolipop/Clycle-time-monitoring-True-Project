@@ -3,28 +3,29 @@ import numpy as np
 import pandas as pd
 from collections import Counter
 from ast import literal_eval
+from combine_param import combine
 
 
 video_path = 'D:/Git project/cycle_time_monitoring/Clycle-time-monitoring-True-Project/Normal.avi'
-csv_path = 'parameter/fin.csv'
+csv_path = 'parameter/'
 
-def read_weight(csv_path):
-    df = pd.read_csv(csv_path)
+# def read_weight(csv_path):
+#     df = pd.read_csv(csv_path)
     
-    method = df['method'].tolist()
-    state = df['state'].tolist()
-    coordinate = df['coordinate'].tolist()
-    upper = df['upper'].tolist()
-    lower = df['lower'].tolist()
-    threshold = df['threshold'].tolist()
+#     method = df['method'].tolist()
+#     state = df['state'].tolist()
+#     coordinate = df['coordinate'].tolist()
+#     upper = df['upper'].tolist()
+#     lower = df['lower'].tolist()
+#     threshold = df['threshold'].tolist()
     
-    for j in range(len(threshold)):
-        threshold[j] = literal_eval(threshold[j])
+#     for j in range(len(threshold)):
+#         threshold[j] = literal_eval(threshold[j])
     
     
-    print(method, state, threshold, coordinate, upper, lower)
+#     print(method, state, threshold, coordinate, upper, lower)
     
-    return method, state, threshold, coordinate, upper, lower
+#     return method, state, threshold, coordinate, upper, lower
 
 
 def detail_video(cap):
@@ -98,7 +99,8 @@ def main(video_path ,csv_path):
     cap = cv2.VideoCapture(video_path)
     
     # weight
-    method, state, threshold, coordinate, upper, lower = read_weight(csv_path)
+#     method, state, threshold, coordinate, upper, lower = read_weight(csv_path)
+    method, state, threshold, coordinate, upper, lower = combine(csv_path)
     
     # detail
     fps, frame_count, duration = detail_video(cap)
