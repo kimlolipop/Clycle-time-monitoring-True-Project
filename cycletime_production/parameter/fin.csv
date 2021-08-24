@@ -1,0 +1,3 @@
+method,coordinate,threshold,state,lower,upper
+Video Subtraction,"[44.0, 140.0, 148.0, 189.0]","[226993.5, 331764.8617021277]",1,[-1],[-1]
+Video Subtraction,"[421.0, 184.0, 457.0, 214.0]","[80000, 119373.15000000001]",2,[-1],[-1]

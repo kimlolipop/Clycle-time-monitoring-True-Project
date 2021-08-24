@@ -1,4 +1,4 @@
-﻿method,state,coordinate,lower,upper
-image subtraction,1,"[50, 140, 200, 200]",,
-image subtraction,2,"[430, 170, 500, 250]",,
-color space,99,"[390,197,475,305]","[24,64,106]","[93, 255,255]"
+﻿method,state,coordinate,lower,upper,Threshold
+image subtraction,1,"[50, 140, 200, 200]",,,"[100000,200000]"
+image subtraction,2,"[430, 170, 500, 250]",,,"[100000,200000]"
+color space,99,"[390,197,475,305]","[24,64,106]","[93, 255,255]","[100000,200000]"

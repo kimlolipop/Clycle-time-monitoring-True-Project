@@ -6,7 +6,7 @@ from ast import literal_eval
 
 
 video_path = 'D:/Git project/cycle_time_monitoring/Clycle-time-monitoring-True-Project/Normal.avi'
-csv_path = 'weight.csv'
+csv_path = 'parameter/fin.csv'
 
 def read_weight(csv_path):
     df = pd.read_csv(csv_path)
@@ -16,10 +16,15 @@ def read_weight(csv_path):
     coordinate = df['coordinate'].tolist()
     upper = df['upper'].tolist()
     lower = df['lower'].tolist()
+    threshold = df['threshold'].tolist()
     
-    print(method, state, coordinate, upper, lower)
+    for j in range(len(threshold)):
+        threshold[j] = literal_eval(threshold[j])
     
-    return method, state, coordinate, upper, lower
+    
+    print(method, state, threshold, coordinate, upper, lower)
+    
+    return method, state, threshold, coordinate, upper, lower
 
 
 def detail_video(cap):
@@ -48,13 +53,23 @@ def setup_param(method):
     relay_status = []
     
     
-    dict_method = dict(Counter(method)) # {'image subtraction' : 2 , 'color space' : 1}
+    dict_method = dict(Counter(method)) # {'Video Subtraction' : 2 , 'color space' : 1}
     no_method = len(method) # 3
-    duplicate_method = list(dict_method.keys()) # ['image subtraction', 'color space']
-    no_image_subtraction = dict_method['image subtraction'] # 2
-    no_color_space = dict_method['color space'] # 1
+    duplicate_method = list(dict_method.keys()) # ['Video Subtraction', 'color space']
+    try:
+        no_image_subtraction = dict_method['Video Subtraction'] # 2
+    except:
+        no_image_subtraction = 0
+        pass
     
-    # image subtraction==================================
+    try:
+        no_color_space = dict_method['color space'] # 1
+    except:
+        no_color_space = 0
+        pass
+        
+    print()
+    # Video Subtraction==================================
     for i in range(no_image_subtraction):
         bgsubknn.append(cv2.createBackgroundSubtractorKNN(40))
         crop_frame.append([])
@@ -83,7 +98,7 @@ def main(video_path ,csv_path):
     cap = cv2.VideoCapture(video_path)
     
     # weight
-    method, state, coordinate, upper, lower = read_weight(csv_path)
+    method, state, threshold, coordinate, upper, lower = read_weight(csv_path)
     
     # detail
     fps, frame_count, duration = detail_video(cap)
@@ -117,12 +132,13 @@ def main(video_path ,csv_path):
 # ============== loop follow param =============================================
         no_count_color_space = 0
         no_count_img_subtraction = 0
+#         print(no_method, len(coordinate), len(crop_frame))
         for z in range(no_method):
             if state[z] != -1:
                 crop_frame[z] = crop(frame, coordinate[z])
                 
         # ================== pre process follow method ==================
-                if method[z] == 'image subtraction':
+                if method[z] == 'Video Subtraction':
                     fg[z] = img_subtrack(crop_frame[z], bgsubknn[no_count_img_subtraction])
                     no_count_img_subtraction += 1 
                     
@@ -134,14 +150,14 @@ def main(video_path ,csv_path):
         # ========================= check status ==========================
                 # threshold + relay management
                 if state[z] == 1:
-                    if np.sum(fg[z]) > 100000 and relay[z] > relay[-1] and time > 100: # relay[-1] = threshold when start video
+                    if np.sum(fg[z]) > threshold[z][0] and relay[z] > relay[-1] and time > 100: # relay[-1] = threshold when start video
                         L_status[z] = True
                         relay_status[z] = True
                         relay[z] = 0
                         print('a')
                         
                 elif state[z] > 1:
-                    if np.sum(fg[z]) > 100000 and relay[z] > relay[-1] and relay_status[z-1] == True:
+                    if np.sum(fg[z]) > threshold[z][0] and relay[z] > relay[-1] and relay_status[z-1] == True:
                         L_status[z] = True
                         relay_status[z] = True
                         relay[z] = 0
@@ -151,7 +167,9 @@ def main(video_path ,csv_path):
             # end if -- check state z != -1
         # next z
    
-        # print(sum(L_status), count, relay[0], relay_status[0],L_status[0], relay[1],relay_status[1], L_status[1],relay[2],relay_status[2],L_status[2],time, np.sum(fg[0]),np.sum(fg[1]),np.sum(fg[2]))      
+         # print(sum(L_status), count, relay[0], relay_status[0],L_status[0], relay[1],relay_status[1], L_status[1],relay[2],relay_status[2],L_status[2],time, np.sum(fg[0]),np.sum(fg[1]),np.sum(fg[2]))
+        print(sum(L_status), count, relay[0], relay_status[0],L_status[0], relay[1],relay_status[1], L_status[1],time, np.sum(fg[0]),np.sum(fg[1]))
+    
         # calculate L_status, relay_status
         if sum(L_status) == len(L_status):
             for k in range(len(relay_status)):
@@ -181,7 +199,7 @@ def main(video_path ,csv_path):
         cv2.imshow('frame8', fg[1])
 #         cv2.imshow('frame9', fg[2])
         
-        key = cv2.waitKey(1)
+        key = cv2.waitKey(50)
         if key ==27:
             break
     print('total process:',count)
@@ -192,10 +210,10 @@ def main(video_path ,csv_path):
     
 def crop(frame, coordinate):
     coor = literal_eval(coordinate)
-    x1 = coor[0] 
-    y1 = coor[1] 
-    x2 = coor[2]
-    y2 = coor[3]
+    x1 = round(coor[0])
+    y1 = round(coor[1]) 
+    x2 = round(coor[2])
+    y2 = round(coor[3])
     
     crop_frame = frame[y1:y2, x1:x2]
     return crop_frame
