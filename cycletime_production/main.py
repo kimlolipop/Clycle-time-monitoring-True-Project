@@ -54,9 +54,9 @@ def setup_param(method):
     relay_status = []
     
     
-    dict_method = dict(Counter(method)) # {'Video Subtraction' : 2 , 'color space' : 1}
+    dict_method = dict(Counter(method)) # {'Video Subtraction' : 2 , 'Color Space' : 1}
     no_method = len(method) # 3
-    duplicate_method = list(dict_method.keys()) # ['Video Subtraction', 'color space']
+    duplicate_method = list(dict_method.keys()) # ['Video Subtraction', 'Color Space']
     try:
         no_image_subtraction = dict_method['Video Subtraction'] # 2
     except:
@@ -64,7 +64,7 @@ def setup_param(method):
         pass
     
     try:
-        no_color_space = dict_method['color space'] # 1
+        no_color_space = dict_method['Color Space'] # 1
     except:
         no_color_space = 0
         pass
@@ -79,7 +79,7 @@ def setup_param(method):
         relay_status.append(False)
         L_status.append(False)
         
-    # color space=========================================
+    # Color Space=========================================
     for i in range(no_color_space):
         crop_frame.append([])
         fg.append([])
@@ -145,7 +145,7 @@ def main(video_path ,csv_path):
                     no_count_img_subtraction += 1 
                     
                     
-                elif method[z] == 'color space':
+                elif method[z] == 'Color Space':
                     fg[z] = color_space(crop_frame[z], upper[z], lower[z])
                     no_count_color_space += 1
                     
@@ -169,8 +169,8 @@ def main(video_path ,csv_path):
             # end if -- check state z != -1
         # next z
    
-         # print(sum(L_status), count, relay[0], relay_status[0],L_status[0], relay[1],relay_status[1], L_status[1],relay[2],relay_status[2],L_status[2],time, np.sum(fg[0]),np.sum(fg[1]),np.sum(fg[2]))
-        print(sum(L_status), count, relay[0], relay_status[0],L_status[0], relay[1],relay_status[1], L_status[1],time, np.sum(fg[0]),np.sum(fg[1]))
+        print(sum(L_status), count, relay[0], relay_status[0],L_status[0], relay[1],relay_status[1], L_status[1],relay[2],relay_status[2],L_status[2],time, np.sum(fg[0]),np.sum(fg[1]),np.sum(fg[2]))
+#         print(sum(L_status), count, relay[0], relay_status[0],L_status[0], relay[1],relay_status[1], L_status[1],time, np.sum(fg[0]),np.sum(fg[1]))
     
         # calculate L_status, relay_status
         if sum(L_status) == len(L_status):
@@ -201,10 +201,11 @@ def main(video_path ,csv_path):
         cv2.imshow('frame8', fg[1])
 #         cv2.imshow('frame9', fg[2])
         
-        key = cv2.waitKey(50)
+        key = cv2.waitKey(100)
         if key ==27:
             break
-    print('total process:',count)
+    print('cycle time:', cycle_time)
+    print('total process:', count)
     
     
     
