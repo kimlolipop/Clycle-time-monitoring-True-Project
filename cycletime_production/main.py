@@ -4,7 +4,7 @@ import pandas as pd
 from collections import Counter
 from ast import literal_eval
 from combine_param import combine
-
+import statistics
 
 video_path = 'D:/Git project/cycle_time_monitoring/Clycle-time-monitoring-True-Project/Normal.avi'
 csv_path = 'parameter/'
@@ -113,6 +113,7 @@ def main(video_path ,csv_path):
         relay[i] = 0
     relay[-1] = 30 # relay will have more than point of interest +1
     
+    time_stamp = []
     time = 0 # number of frame
     timer = 0 
     count = 0 # no. of work that success
@@ -184,7 +185,9 @@ def main(video_path ,csv_path):
                 process_time = timer/fps
                 count += 1
                 cycle_time.append(process_time)
-                print(cycle_time)
+                time_stamp.append(time/fps)
+#                 print(cycle_time)
+                
                 # reset timer
                 timer = 0
                 
@@ -201,15 +204,16 @@ def main(video_path ,csv_path):
         cv2.imshow('frame8', fg[1])
 #         cv2.imshow('frame9', fg[2])
         
-        key = cv2.waitKey(100)
+        key = cv2.waitKey(1)
         if key ==27:
             break
+            
+    print('time_stamp: ', time_stamp)
     print('cycle time:', cycle_time)
     print('total process:', count)
     
+    export_output(cycle_time, time_stamp)
     
-    
-
     
 def crop(frame, coordinate):
     coor = literal_eval(coordinate)
@@ -232,10 +236,23 @@ def color_space(frame, upper, lower):
     lower_color = np.array(literal_eval(lower))
     upper_color = np.array(literal_eval(upper))
     fg = cv2.inRange(HLS ,lower_color, upper_color)
-
     return fg
     
-
+    
+def export_output(cycle_time, time_stamp):
+    
+    std_time = statistics.mean(cycle_time)*1.07
+#     print(std_time)
+    
+    df = pd.DataFrame()
+    df['TimeStamp'] = time_stamp
+    df['CycleTime'] = cycle_time
+    df['Event'] = 'Normal'
+#     print(mean)
+    print(df)
+    
+    
+    
 main(video_path, csv_path)
 
     
